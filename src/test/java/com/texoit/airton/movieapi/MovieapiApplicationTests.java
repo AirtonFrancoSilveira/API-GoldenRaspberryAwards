@@ -1,13 +1,15 @@
 package com.texoit.airton.movieapi;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-@SpringBootTest
-class MovieapiApplicationTests {
-
-	@Test
-	void contextLoads() {
-	}
+@RunWith(Suite.class)
+@Suite.SuiteClasses({
+    MovieControllerIntegrationTest.class,
+    ProducerControllerIntegrationTest.class,
+    StudioControllerIntegrationTest.class
+})
+public class MovieapiApplicationTests {
 
 }
+
