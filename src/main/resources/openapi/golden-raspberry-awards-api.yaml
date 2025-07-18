@@ -1,0 +1,474 @@
+openapi: 3.0.3
+info:
+  title: Golden Raspberry Awards API
+  description: |
+    API RESTful para consulta de informações sobre vencedores da categoria "Pior Filme" do Golden Raspberry Awards.
+    
+    ## Principais Funcionalidades
+    
+    - **Intervalos entre Prêmios**: Calcula intervalos entre prêmios consecutivos de produtores
+    - **Consulta de Filmes**: Busca filmes por ano específico
+    - **Anos com Múltiplos Vencedores**: Lista anos que tiveram mais de um vencedor
+    - **Estúdios Vencedores**: Lista estúdios com mais vitórias
+    - **Gerenciamento de Filmes**: Permite remoção de filmes não vencedores
+    
+    ## Regras de Negócio
+    
+    - Apenas intervalos **consecutivos** são calculados
+    - Em caso de **empate**, todos os produtores são retornados
+    - Filmes **vencedores** não podem ser removidos
+    - Dados baseados no arquivo CSV carregado na inicialização
+    
+  version: 1.0.0
+  contact:
+    name: Equipe de Desenvolvimento
+    url: https://github.com/texoit
+    email: contato@texoit.com.br
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+  termsOfService: https://www.texoit.com.br/terms
+
+servers:
+  - url: http://localhost:8080/api
+    description: Servidor de Desenvolvimento
+  - url: https://api.texoit.com.br/golden-raspberry
+    description: Servidor de Produção
+
+paths:
+  /producer/interval-prizes:
+    get:
+      tags:
+        - Producer
+      summary: Obter intervalos entre prêmios de produtores
+      description: |
+        Retorna os produtores com **maior** e **menor** intervalo entre prêmios consecutivos.
+        
+        ### Lógica de Cálculo
+        - Considera apenas vitórias **consecutivas** de cada produtor
+        - Ordena cronologicamente por ano
+        - Em caso de **empate**, retorna todos os produtores
+        - Calcula diferença em anos entre vitórias
+        
+        ### Casos Especiais
+        - Retorna 204 se não houver produtores com múltiplos prêmios
+        - Ignora produtores com apenas uma vitória
+        
+      operationId: getProducerIntervalPrizes
+      responses:
+        '200':
+          description: Intervalos calculados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProducerMinMaxPrizesResponse'
+              examples:
+                success:
+                  summary: Exemplo de resposta com intervalos
+                  value:
+                    min:
+                      - producer: "Joel Silver"
+                        interval: 1
+                        previousWin: 1990
+                        followingWin: 1991
+                      - producer: "Matthew Vaughn"
+                        interval: 1
+                        previousWin: 2002
+                        followingWin: 2003
+                    max:
+                      - producer: "Matthew Vaughn"
+                        interval: 22
+                        previousWin: 2003
+                        followingWin: 2025
+        '204':
+          description: Nenhum intervalo encontrado (sem dados ou sem produtores com múltiplos prêmios)
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /movie/{year}:
+    get:
+      tags:
+        - Movie
+      summary: Buscar filmes por ano
+      description: |
+        Retorna todos os filmes (vencedores e não vencedores) de um ano específico.
+        
+        ### Informações Incluídas
+        - Título do filme
+        - Ano de lançamento
+        - Lista de estúdios produtores
+        - Lista de produtores
+        - Status de vencedor (true/false)
+        
+      operationId: getMoviesByYear
+      parameters:
+        - name: year
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1980
+            maximum: 2025
+            example: 1985
+          description: Ano para buscar filmes
+      responses:
+        '200':
+          description: Filmes encontrados com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MovieResponse'
+              examples:
+                success:
+                  summary: Exemplo de filmes de 1985
+                  value:
+                    - id: 1
+                      year: 1985
+                      title: "Rambo: First Blood Part II"
+                      studios: ["TriStar Pictures"]
+                      producers: ["Buzz Feitshans"]
+                      winner: true
+        '204':
+          description: Nenhum filme encontrado para o ano especificado
+        '400':
+          description: Ano inválido fornecido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /movie/years:
+    get:
+      tags:
+        - Movie
+      summary: Listar anos com múltiplos vencedores
+      description: |
+        Retorna todos os anos que tiveram **mais de um filme vencedor** na categoria "Pior Filme".
+        
+        ### Informações Incluídas
+        - Ano com múltiplos vencedores
+        - Quantidade de filmes vencedores naquele ano
+        - Ordenação por ano
+        
+      operationId: getYearsWithMultipleWinners
+      responses:
+        '200':
+          description: Anos com múltiplos vencedores encontrados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YearWinnerResponse'
+              examples:
+                success:
+                  summary: Exemplo de anos com múltiplos vencedores
+                  value:
+                    years:
+                      - year: 1986
+                        winnerCount: 2
+                      - year: 2015
+                        winnerCount: 3
+        '204':
+          description: Nenhum ano com múltiplos vencedores encontrado
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /movie/{id}:
+    delete:
+      tags:
+        - Movie
+      summary: Remover filme por ID
+      description: |
+        Remove um filme específico do sistema.
+        
+        ### Restrições
+        - Apenas filmes **não vencedores** podem ser removidos
+        - Filmes vencedores não podem ser deletados para manter integridade histórica
+        - Operação irreversível
+        
+      operationId: removeMovieById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 1
+          description: ID do filme a ser removido
+      responses:
+        '200':
+          description: Filme removido com sucesso
+        '400':
+          description: Tentativa de remover um filme vencedor (operação não permitida)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Filme não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /studio/winners:
+    get:
+      tags:
+        - Studio
+      summary: Listar estúdios vencedores
+      description: |
+        Retorna todos os estúdios que possuem filmes vencedores na categoria "Pior Filme".
+        
+        ### Informações Incluídas
+        - Nome do estúdio
+        - Quantidade total de vitórias
+        - Ordenação por quantidade de vitórias (decrescente)
+        
+      operationId: getStudioWinners
+      responses:
+        '200':
+          description: Estúdios vencedores encontrados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudioResponse'
+              examples:
+                success:
+                  summary: Exemplo de estúdios vencedores
+                  value:
+                    studios:
+                      - name: "Columbia Pictures"
+                        winCount: 7
+                      - name: "Paramount Pictures"
+                        winCount: 6
+        '204':
+          description: Nenhum estúdio vencedor encontrado
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    ProducerMinMaxPrizesResponse:
+      type: object
+      description: Resposta contendo intervalos mínimos e máximos entre prêmios
+      required:
+        - min
+        - max
+      properties:
+        min:
+          type: array
+          description: Lista de produtores com menor intervalo entre prêmios consecutivos
+          items:
+            $ref: '#/components/schemas/ProducerInterval'
+        max:
+          type: array
+          description: Lista de produtores com maior intervalo entre prêmios consecutivos
+          items:
+            $ref: '#/components/schemas/ProducerInterval'
+      example:
+        min:
+          - producer: "Joel Silver"
+            interval: 1
+            previousWin: 1990
+            followingWin: 1991
+        max:
+          - producer: "Matthew Vaughn"
+            interval: 13
+            previousWin: 2002
+            followingWin: 2015
+
+    ProducerInterval:
+      type: object
+      description: Informações sobre intervalo entre prêmios consecutivos de um produtor
+      required:
+        - producer
+        - interval
+        - previousWin
+        - followingWin
+      properties:
+        producer:
+          type: string
+          description: Nome completo do produtor
+          example: "Joel Silver"
+        interval:
+          type: integer
+          description: Intervalo em anos entre os prêmios
+          minimum: 1
+          example: 1
+        previousWin:
+          type: integer
+          description: Ano da vitória anterior
+          minimum: 1980
+          example: 1990
+        followingWin:
+          type: integer
+          description: Ano da vitória posterior
+          minimum: 1980
+          example: 1991
+
+    MovieResponse:
+      type: object
+      description: Informações completas sobre um filme
+      required:
+        - id
+        - year
+        - title
+        - studios
+        - producers
+        - winner
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID único do filme
+          example: 1
+        year:
+          type: integer
+          description: Ano de lançamento do filme
+          minimum: 1980
+          maximum: 2025
+          example: 1985
+        title:
+          type: string
+          description: Título do filme
+          example: "Rambo: First Blood Part II"
+        studios:
+          type: array
+          description: Lista de estúdios produtores
+          items:
+            type: string
+          example: ["TriStar Pictures"]
+        producers:
+          type: array
+          description: Lista de produtores
+          items:
+            type: string
+          example: ["Buzz Feitshans"]
+        winner:
+          type: boolean
+          description: Indica se o filme foi vencedor
+          example: true
+
+    YearWinnerResponse:
+      type: object
+      description: Lista de anos com múltiplos vencedores
+      required:
+        - years
+      properties:
+        years:
+          type: array
+          description: Anos que tiveram múltiplos vencedores
+          items:
+            $ref: '#/components/schemas/YearWinner'
+
+    YearWinner:
+      type: object
+      description: Informações sobre um ano com múltiplos vencedores
+      required:
+        - year
+        - winnerCount
+      properties:
+        year:
+          type: integer
+          description: Ano com múltiplos vencedores
+          minimum: 1980
+          example: 1986
+        winnerCount:
+          type: integer
+          description: Quantidade de filmes vencedores
+          minimum: 2
+          example: 2
+
+    StudioResponse:
+      type: object
+      description: Lista de estúdios vencedores
+      required:
+        - studios
+      properties:
+        studios:
+          type: array
+          description: Estúdios com filmes vencedores
+          items:
+            $ref: '#/components/schemas/StudioWinner'
+
+    StudioWinner:
+      type: object
+      description: Informações sobre um estúdio vencedor
+      required:
+        - name
+        - winCount
+      properties:
+        name:
+          type: string
+          description: Nome do estúdio
+          example: "Columbia Pictures"
+        winCount:
+          type: integer
+          description: Quantidade de vitórias
+          minimum: 1
+          example: 7
+
+    ErrorResponse:
+      type: object
+      description: Resposta de erro padronizada
+      required:
+        - code
+        - message
+        - timestamp
+      properties:
+        code:
+          type: string
+          description: Código do erro
+          example: "MOVIE_NOT_FOUND"
+        message:
+          type: string
+          description: Mensagem descritiva do erro
+          example: "Filme não encontrado"
+        details:
+          type: object
+          description: Detalhes adicionais do erro
+          additionalProperties:
+            type: string
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp do erro
+          example: "2024-01-15T10:30:00Z"
+        path:
+          type: string
+          description: Path da requisição que causou o erro
+          example: "/api/movie/123"
+
+tags:
+  - name: Producer
+    description: Operações relacionadas aos produtores
+  - name: Movie
+    description: Operações relacionadas aos filmes
+  - name: Studio
+    description: Operações relacionadas aos estúdios 
