@@ -1,6 +1,7 @@
 package com.texoit.airton.movieapi.application.usecase;
 
 import java.time.Year;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -114,7 +115,7 @@ public class CalculateProducerIntervalsUseCase {
      */
     private List<ProducerInterval> findMinimalIntervals(List<ProducerInterval> intervals) {
         if (intervals.isEmpty()) {
-            return List.of();
+            return new ArrayList<>();
         }
 
         int minYears = intervals.stream()
@@ -132,7 +133,7 @@ public class CalculateProducerIntervalsUseCase {
      */
     private List<ProducerInterval> findMaximalIntervals(List<ProducerInterval> intervals) {
         if (intervals.isEmpty()) {
-            return List.of();
+            return new ArrayList<>();
         }
 
         int maxYears = intervals.stream()

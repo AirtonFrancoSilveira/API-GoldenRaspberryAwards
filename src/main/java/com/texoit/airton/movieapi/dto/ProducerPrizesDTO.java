@@ -1,17 +1,18 @@
 package com.texoit.airton.movieapi.dto;
 
 public class ProducerPrizesDTO {
-	
+
 	private String producer;
-	
+
 	private Integer interval;
-	
+
 	private Integer previousWin;
-	
+
 	private Integer followingWin;
-	
-	public ProducerPrizesDTO() {}
-	
+
+	public ProducerPrizesDTO() {
+	}
+
 	public ProducerPrizesDTO(String producer, Integer interval, Integer previousWin, Integer followingWin) {
 		this.producer = producer;
 		this.interval = interval;
@@ -50,5 +51,5 @@ public class ProducerPrizesDTO {
 	public void setFollowingWin(Integer followingWin) {
 		this.followingWin = followingWin;
 	}
-	
+
 }

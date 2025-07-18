@@ -15,22 +15,22 @@ import com.texoit.airton.movieapi.service.StudioService;
 @RestController
 @RequestMapping("/studio")
 public class StudioController {
-	
+
 	Logger logger = LoggerFactory.getLogger(StudioController.class);
-	
+
 	@Autowired
 	private StudioService studioService;
-	
+
 	@GetMapping("/winners")
 	public ResponseEntity<StudioDTO> getGreatestWinners() {
 		StudioDTO dto = studioService.getGreatestWinners();
-		
+
 		HttpStatus status = HttpStatus.OK;
-		if ( dto.getStudios() == null || dto.getStudios().isEmpty() ) {
+		if (dto.getStudios() == null || dto.getStudios().isEmpty()) {
 			status = HttpStatus.NO_CONTENT;
 		}
-		
-		return new ResponseEntity<StudioDTO>(dto, status) ;
+
+		return new ResponseEntity<StudioDTO>(dto, status);
 	}
 
 }

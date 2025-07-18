@@ -20,20 +20,20 @@ import com.texoit.airton.movieapi.service.StudioService;
 
 @SpringBootApplication(scanBasePackages = { "com.texoit.airton.movieapi" })
 public class MovieapiApplication {
-	
+
 	@Autowired
 	private MovieRepository movieRepository;
-	
+
 	@Autowired
 	private StudioService studioService;
-	
+
 	@Autowired
 	private ProducerService producerService;
-	
+
 	public static void main(String[] args) {
 		SpringApplication.run(MovieapiApplication.class, args);
 	}
-	
+
 	@Bean
 	public CommandLineRunner commandLineRunner(ApplicationContext appContext) {
 		return args -> {
@@ -43,7 +43,7 @@ public class MovieapiApplication {
 			Reader reader = new InputStreamReader(in);
 			Iterable<CSVRecord> records = CSVFormat.RFC4180
 					.withDelimiter(';')
-					.withHeader("year","title","studios","producers","winner")
+					.withHeader("year", "title", "studios", "producers", "winner")
 					.parse(reader);
 
 			for (CSVRecord record : records) {
@@ -52,16 +52,17 @@ public class MovieapiApplication {
 				}
 
 				String winner = record.get("winner");
-				Movie movie = movieRepository.save(new Movie(Integer.valueOf(record.get("year")), record.get("title"), winner));
+				Movie movie = movieRepository
+						.save(new Movie(Integer.valueOf(record.get("year")), record.get("title"), winner));
 
 				String studios = record.get("studios");
 				studioService.saveStudios(movie, studios);
-				
+
 				String producers = record.get("producers");
 				producerService.saveProducers(movie, producers);
 			}
 
-        };
+		};
 	}
-	
+
 }
