@@ -5,10 +5,6 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-/**
- * DTO para respostas de erro padronizadas.
- * Segue as práticas de senior engineer para tratamento de erros.
- */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponse {
 
@@ -18,11 +14,9 @@ public class ErrorResponse {
     private Instant timestamp;
     private String path;
 
-    // Construtor padrão
     public ErrorResponse() {
     }
 
-    // Construtor com builder
     private ErrorResponse(Builder builder) {
         this.code = builder.code;
         this.message = builder.message;
@@ -31,7 +25,6 @@ public class ErrorResponse {
         this.path = builder.path;
     }
 
-    // Builder pattern
     public static Builder builder() {
         return new Builder();
     }
@@ -73,7 +66,6 @@ public class ErrorResponse {
         }
     }
 
-    // Getters and Setters
     public String getCode() {
         return code;
     }

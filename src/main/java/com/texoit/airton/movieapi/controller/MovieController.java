@@ -20,41 +20,38 @@ import com.texoit.airton.movieapi.service.MovieService;
 @RestController
 @RequestMapping("/movie")
 public class MovieController {
-	
+
 	Logger logger = LoggerFactory.getLogger(MovieController.class);
-	
+
 	@Autowired
 	private MovieService movieService;
-	
+
 	@GetMapping("/{year}")
-    public ResponseEntity<List<MovieDTO>> getMovies(@PathVariable(name="year") Integer year) {
+	public ResponseEntity<List<MovieDTO>> getMovies(@PathVariable(name = "year") Integer year) {
 		List<MovieDTO> movies = movieService.getMoviesByYear(year);
-		
+
 		HttpStatus status = HttpStatus.OK;
-		if ( movies.isEmpty() ) {
+		if (movies.isEmpty()) {
 			status = HttpStatus.NO_CONTENT;
 		}
-		
-        return new ResponseEntity<List<MovieDTO>>( movies, status ) ;
-    }
-	
-	/**
-	 * @return {@link YearWinnerDTO}
-	 */
+
+		return new ResponseEntity<List<MovieDTO>>(movies, status);
+	}
+
 	@GetMapping("/years")
 	public ResponseEntity<YearWinnerDTO> getYearsWithMoreThanOneWinners() {
 		YearWinnerDTO dto = movieService.getYearsWithMoreThanOneWinners();
-		
+
 		HttpStatus status = HttpStatus.OK;
-		if ( dto.getYears().isEmpty() ) {
+		if (dto.getYears().isEmpty()) {
 			status = HttpStatus.NO_CONTENT;
 		}
-		
-		return new ResponseEntity<YearWinnerDTO>( dto, status ) ;
+
+		return new ResponseEntity<YearWinnerDTO>(dto, status);
 	}
-	
+
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> removeMovie(@PathVariable(name="id") Long id) {
+	public ResponseEntity<Void> removeMovie(@PathVariable(name = "id") Long id) {
 		movieService.remove(id);
 		return new ResponseEntity<Void>(HttpStatus.OK);
 	}

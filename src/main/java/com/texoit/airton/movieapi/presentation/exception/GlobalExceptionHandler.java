@@ -19,19 +19,11 @@ import org.springframework.web.context.request.WebRequest;
 import com.texoit.airton.movieapi.presentation.dto.ErrorResponse;
 import com.texoit.airton.movieapi.shared.exception.InvalidIntervalException;
 
-/**
- * Handler global de exceções seguindo práticas de senior engineer.
- * Centraliza tratamento de erros com logs estruturados e respostas
- * padronizadas.
- */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    /**
-     * Trata exceções de validação de dados
-     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(
             MethodArgumentNotValidException ex, WebRequest request) {
@@ -56,9 +48,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errorResponse);
     }
 
-    /**
-     * Trata exceções de constraint validation
-     */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleConstraintViolationException(
             ConstraintViolationException ex, WebRequest request) {

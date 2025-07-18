@@ -5,10 +5,6 @@ import java.util.Objects;
 
 import com.texoit.airton.movieapi.shared.exception.InvalidIntervalException;
 
-/**
- * Value Object representando um intervalo entre prêmios de um produtor.
- * Segue os princípios de DDD com encapsulamento de regras de negócio.
- */
 public class ProducerInterval {
 
     private final String producerName;
@@ -42,42 +38,26 @@ public class ProducerInterval {
         }
     }
 
-    /**
-     * Verifica se este intervalo é menor que outro
-     */
     public boolean isShorterThan(ProducerInterval other) {
         return this.years < other.years;
     }
 
-    /**
-     * Verifica se este intervalo é maior que outro
-     */
     public boolean isLongerThan(ProducerInterval other) {
         return this.years > other.years;
     }
 
-    /**
-     * Verifica se este intervalo tem a mesma duração que outro
-     */
     public boolean hasSameDurationAs(ProducerInterval other) {
         return this.years == other.years;
     }
 
-    /**
-     * Verifica se este é um intervalo consecutivo (apenas 1 ano)
-     */
     public boolean isConsecutive() {
         return this.years == 1;
     }
 
-    /**
-     * Verifica se este é um intervalo longo (mais de 10 anos)
-     */
     public boolean isLongTerm() {
         return this.years > 10;
     }
 
-    // Getters
     public String getProducerName() {
         return producerName;
     }

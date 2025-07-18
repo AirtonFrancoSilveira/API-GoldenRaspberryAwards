@@ -49,21 +49,17 @@ public class ProducerService {
 	public ProducerMinMaxPrizesDTO getMaxAndMinPrizes() {
 		List<MovieProducer> mpList = movieProducerRepository.findByMovieWinnerOrderByProducerId(true);
 
-		// Calcular todos os intervalos consecutivos
 		List<ProducerPrizesDTO> allIntervals = calculateAllConsecutiveIntervals(mpList);
 
-		// Encontrar todos os produtores com intervalo mínimo e máximo
 		List<ProducerPrizesDTO> minIntervals = findAllMinIntervals(allIntervals);
 		List<ProducerPrizesDTO> maxIntervals = findAllMaxIntervals(allIntervals);
 
 		ProducerMinMaxPrizesDTO dto = new ProducerMinMaxPrizesDTO();
 
-		// Adicionar todos os intervalos mínimos
 		for (ProducerPrizesDTO minInterval : minIntervals) {
 			dto.addMin(minInterval);
 		}
 
-		// Adicionar todos os intervalos máximos
 		for (ProducerPrizesDTO maxInterval : maxIntervals) {
 			dto.addMax(maxInterval);
 		}
@@ -74,7 +70,6 @@ public class ProducerService {
 	private List<ProducerPrizesDTO> calculateAllConsecutiveIntervals(List<MovieProducer> mpList) {
 		List<ProducerPrizesDTO> intervals = new ArrayList<>();
 
-		// Agrupar filmes por produtor
 		Map<String, List<Integer>> producerYears = new HashMap<>();
 
 		for (MovieProducer mp : mpList) {
@@ -84,15 +79,12 @@ public class ProducerService {
 			producerYears.computeIfAbsent(producerName, k -> new ArrayList<>()).add(year);
 		}
 
-		// Calcular intervalos consecutivos para cada produtor
 		for (Map.Entry<String, List<Integer>> entry : producerYears.entrySet()) {
 			String producerName = entry.getKey();
 			List<Integer> years = entry.getValue();
 
-			// Ordenar anos
 			years.sort(Integer::compareTo);
 
-			// Calcular intervalos consecutivos
 			for (int i = 0; i < years.size() - 1; i++) {
 				Integer previousWin = years.get(i);
 				Integer followingWin = years.get(i + 1);
@@ -112,13 +104,11 @@ public class ProducerService {
 			return minIntervals;
 		}
 
-		// Encontrar o menor intervalo
 		Integer minInterval = intervals.stream()
 				.mapToInt(ProducerPrizesDTO::getInterval)
 				.min()
 				.orElse(Integer.MAX_VALUE);
 
-		// Adicionar todos os produtores com o menor intervalo
 		for (ProducerPrizesDTO interval : intervals) {
 			if (interval.getInterval().equals(minInterval)) {
 				minIntervals.add(interval);
@@ -135,13 +125,11 @@ public class ProducerService {
 			return maxIntervals;
 		}
 
-		// Encontrar o maior intervalo
 		Integer maxInterval = intervals.stream()
 				.mapToInt(ProducerPrizesDTO::getInterval)
 				.max()
 				.orElse(Integer.MIN_VALUE);
 
-		// Adicionar todos os produtores com o maior intervalo
 		for (ProducerPrizesDTO interval : intervals) {
 			if (interval.getInterval().equals(maxInterval)) {
 				maxIntervals.add(interval);

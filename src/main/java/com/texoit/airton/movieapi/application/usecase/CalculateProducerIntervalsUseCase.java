@@ -14,11 +14,6 @@ import com.texoit.airton.movieapi.entity.MovieProducer;
 import com.texoit.airton.movieapi.repository.MovieProducerRepository;
 import com.texoit.airton.movieapi.shared.annotation.UseCase;
 
-/**
- * Use Case para calcular intervalos entre prêmios de produtores.
- * Implementa os princípios de Clean Architecture com regras de negócio bem
- * definidas.
- */
 @UseCase
 public class CalculateProducerIntervalsUseCase {
 
@@ -30,28 +25,19 @@ public class CalculateProducerIntervalsUseCase {
         this.movieProducerRepository = movieProducerRepository;
     }
 
-    /**
-     * Executa o cálculo de intervalos entre prêmios.
-     * 
-     * @return DTO com intervalos mínimos e máximos
-     */
     public ProducerMinMaxPrizesDTO execute() {
         logger.info("Starting producer intervals calculation");
 
         try {
-            // 1. Buscar todos os produtores vencedores
             List<MovieProducer> winners = movieProducerRepository.findByMovieWinnerOrderByProducerId(true);
             logger.debug("Found {} winning movies", winners.size());
 
-            // 2. Calcular todos os intervalos consecutivos
             List<ProducerInterval> intervals = calculateConsecutiveIntervals(winners);
             logger.debug("Calculated {} intervals", intervals.size());
 
-            // 3. Encontrar intervalos mínimos e máximos
             List<ProducerInterval> minIntervals = findMinimalIntervals(intervals);
             List<ProducerInterval> maxIntervals = findMaximalIntervals(intervals);
 
-            // 4. Converter para DTO de resposta
             ProducerMinMaxPrizesDTO result = buildResponse(minIntervals, maxIntervals);
 
             logger.info("Intervals calculation completed successfully. Min: {}, Max: {}",
@@ -152,7 +138,6 @@ public class CalculateProducerIntervalsUseCase {
             List<ProducerInterval> maxIntervals) {
         ProducerMinMaxPrizesDTO result = new ProducerMinMaxPrizesDTO();
 
-        // Adicionar intervalos mínimos
         minIntervals.forEach(interval -> {
             ProducerPrizesDTO dto = new ProducerPrizesDTO(
                     interval.getProducerName(),
@@ -162,7 +147,6 @@ public class CalculateProducerIntervalsUseCase {
             result.addMin(dto);
         });
 
-        // Adicionar intervalos máximos
         maxIntervals.forEach(interval -> {
             ProducerPrizesDTO dto = new ProducerPrizesDTO(
                     interval.getProducerName(),
