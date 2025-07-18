@@ -39,16 +39,19 @@ public class ProducerScenarioTest {
 
     @Test
     public void testClientScenario() {
+        // Limpar dados existentes
         movieProducerRepository.deleteAll();
         movieRepository.deleteAll();
         producerRepository.deleteAll();
 
+        // Criar produtores
         Producer matthewVaughn = new Producer("Matthew Vaughn");
         Producer joelSilver = new Producer("Joel Silver");
 
         producerRepository.save(matthewVaughn);
         producerRepository.save(joelSilver);
 
+        // Criar filmes do Matthew Vaughn
         Movie movie1980 = new Movie(1980, "Test 1", "yes");
         Movie movie2002 = new Movie(2002, "Swept Away", "yes");
         Movie movie2003 = new Movie(2003, "Test 2", "yes");
@@ -57,10 +60,13 @@ public class ProducerScenarioTest {
 
         movieRepository.saveAll(Arrays.asList(movie1980, movie2002, movie2003, movie2015, movie2037));
 
+        // Criar filmes do Joel Silver
         Movie movie1990 = new Movie(1990, "The Adventures of Ford Fairlane", "yes");
         Movie movie1991 = new Movie(1991, "Hudson Hawk", "yes");
 
         movieRepository.saveAll(Arrays.asList(movie1990, movie1991));
+
+        // Criar relacionamentos MovieProducer
         movieProducerRepository.save(new MovieProducer(movie1980, matthewVaughn));
         movieProducerRepository.save(new MovieProducer(movie2002, matthewVaughn));
         movieProducerRepository.save(new MovieProducer(movie2003, matthewVaughn));
@@ -70,23 +76,31 @@ public class ProducerScenarioTest {
         movieProducerRepository.save(new MovieProducer(movie1990, joelSilver));
         movieProducerRepository.save(new MovieProducer(movie1991, joelSilver));
 
+        // Executar o serviço
         ProducerMinMaxPrizesDTO result = producerService.getMaxAndMinPrizes();
 
+        // Validar resultados
         assertNotNull(result);
 
+        // Deve ter 2 resultados min (interval = 1)
         List<ProducerPrizesDTO> minResults = result.getMin();
         assertEquals("Deve haver exatamente 2 resultados min", 2, minResults.size());
 
+        // Verificar se todos os min têm intervalo = 1
         for (ProducerPrizesDTO min : minResults) {
             assertEquals("Intervalo mínimo deve ser 1", Integer.valueOf(1), min.getInterval());
         }
 
+        // Deve ter 2 resultados max (interval = 22)
         List<ProducerPrizesDTO> maxResults = result.getMax();
         assertEquals("Deve haver exatamente 2 resultados max", 2, maxResults.size());
 
+        // Verificar se todos os max têm intervalo = 22
         for (ProducerPrizesDTO max : maxResults) {
             assertEquals("Intervalo máximo deve ser 22", Integer.valueOf(22), max.getInterval());
         }
+
+        // Validar dados específicos
         boolean foundJoelSilverMin = minResults.stream()
                 .anyMatch(p -> "Joel Silver".equals(p.getProducer()) &&
                         p.getPreviousWin() == 1990 &&

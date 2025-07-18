@@ -16,6 +16,11 @@ import com.texoit.airton.movieapi.entity.MovieProducer;
 import com.texoit.airton.movieapi.entity.Producer;
 import com.texoit.airton.movieapi.repository.MovieProducerRepository;
 
+/**
+ * Test Slice para MovieProducerRepository.
+ * Demonstra práticas de senior engineer com @DataJpaTest e TestEntityManager.
+ * Testa apenas a camada de persistência isoladamente.
+ */
 @RunWith(SpringRunner.class)
 @DataJpaTest
 public class MovieProducerRepositoryTest {

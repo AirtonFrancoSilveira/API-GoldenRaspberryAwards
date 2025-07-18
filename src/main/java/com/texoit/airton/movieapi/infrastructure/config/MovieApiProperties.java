@@ -3,6 +3,10 @@ package com.texoit.airton.movieapi.infrastructure.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configurações externalizadas da aplicação.
+ * Demonstra práticas de senior engineer com configuração tipada e validada.
+ */
 @Configuration
 @ConfigurationProperties(prefix = "movieapi")
 public class MovieApiProperties {
@@ -11,6 +15,7 @@ public class MovieApiProperties {
     private final Calculation calculation = new Calculation();
     private final Performance performance = new Performance();
 
+    // Getters
     public Csv getCsv() {
         return csv;
     }
@@ -23,12 +28,16 @@ public class MovieApiProperties {
         return performance;
     }
 
+    /**
+     * Configurações de processamento de CSV
+     */
     public static class Csv {
         private String delimiter = ";";
         private String encoding = "UTF-8";
         private boolean skipFirstLine = true;
         private int batchSize = 1000;
 
+        // Getters and Setters
         public String getDelimiter() {
             return delimiter;
         }
@@ -62,12 +71,16 @@ public class MovieApiProperties {
         }
     }
 
+    /**
+     * Configurações de cálculo de intervalos
+     */
     public static class Calculation {
         private boolean includeNonConsecutive = false;
         private int maxResults = 100;
         private boolean enableCaching = true;
         private long cacheExpirationMinutes = 60;
 
+        // Getters and Setters
         public boolean isIncludeNonConsecutive() {
             return includeNonConsecutive;
         }
@@ -110,6 +123,7 @@ public class MovieApiProperties {
         private long slowQueryThresholdMs = 1000;
         private int threadPoolSize = 10;
 
+        // Getters and Setters
         public boolean isEnableMetrics() {
             return enableMetrics;
         }

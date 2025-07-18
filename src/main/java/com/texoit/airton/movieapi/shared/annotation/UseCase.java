@@ -8,6 +8,10 @@ import java.lang.annotation.Target;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.stereotype.Component;
 
+/**
+ * Annotation para marcar classes como Use Cases na arquitetura limpa.
+ * Automaticamente registra a classe como um componente Spring.
+ */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Component
